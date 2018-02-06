@@ -81,7 +81,7 @@ class BigQueryHelper(object):
 
     def query_to_pandas_safe(self, query, max_gb_scanned=1):
         """
-        Execute a query iff it's smaller than a certain number of gigabytes
+        Execute a query if it's smaller than a certain number of gigabytes
         """
         query_size = self.estimate_query_size(query)
         if query_size <= max_gb_scanned:
