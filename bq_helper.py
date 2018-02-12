@@ -76,6 +76,9 @@ class BigQueryHelper(object):
         """
         query_job = self.client.query(query)
         rows = list(query_job.result(timeout=30))
+        if len(rows) == 0:
+            print("Query returned no rows.")
+            return None
         return pd.DataFrame(
             data=[list(x.values()) for x in rows], columns=list(rows[0].keys()))
 
