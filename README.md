@@ -6,6 +6,8 @@ You can try it for yourself by forking [this Kaggle kernel](https://www.kaggle.c
 
 ### Installation
 You can install BigQuery_Helper with the following pip command in your console:
+
+
 `pip install -e git+https://github.com/SohierDane/BigQuery_Helper#egg=bq_helper`.
 
 ### Changelog
