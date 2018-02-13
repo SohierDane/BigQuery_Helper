@@ -1,8 +1,6 @@
 ### Summary
 
-BigQuery_Helper provides a helper class to simplify common read-only BigQuery tasks.
-
-You can try it for yourself by forking [this Kaggle kernel](https://www.kaggle.com/sohier/introduction-to-the-bq-helper-package/).
+BigQuery_Helper provides a helper class to simplify common read-only BigQuery tasks. You can try it for yourself by forking [this Kaggle kernel](https://www.kaggle.com/sohier/introduction-to-the-bq-helper-package/).
 
 ### Installation
 You can install BigQuery_Helper with the following command in your console:
