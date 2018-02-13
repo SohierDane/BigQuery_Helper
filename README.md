@@ -4,6 +4,9 @@ BigQuery_Helper provides a helper class to simplify common read-only BigQuery ta
 
 You can try it for yourself by forking [this Kaggle kernel](https://www.kaggle.com/sohier/introduction-to-the-bq-helper-package/).
 
+### Installation
+You can install BigQuery_Helper with the following pip command in your console:
+`pip install -e git+https://github.com/SohierDane/BigQuery_Helper#egg=bq_helper`.
 
 ### Changelog
 
