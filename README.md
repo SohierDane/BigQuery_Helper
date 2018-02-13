@@ -10,6 +10,8 @@ You can install BigQuery_Helper with the following command in your console:
 
 If you aren't running BigQuery_Helper on Kaggle, you will also need to go through the [standard BigQuery client setup and authentication process](https://cloud.google.com/bigquery/docs/reference/libraries).
 
+This repo has only been tested on Python 3.6+.
+
 ### Changelog
 
 - 0.2.0: `query_to_pandas` now returns an empty DataFrame when the query returns no results. Previously, this returned `None`.
