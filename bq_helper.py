@@ -2,8 +2,6 @@
 Helper class to simplify common read-only BigQuery tasks.
 """
 
-__version__ = '0.1.0'
-
 
 import pandas as pd
 
