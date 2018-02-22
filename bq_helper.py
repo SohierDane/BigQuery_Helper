@@ -87,7 +87,8 @@ class BigQueryHelper(object):
         query_size = self.estimate_query_size(query)
         if query_size <= max_gb_scanned:
             return self.query_to_pandas(query)
-        print(f"Query cancelled; estimated size of {query_size} exceeds limit of {max_gb_scanned} GB")
+	print("Query cancelled; estimated size of {} exceeds limit"
+              "of {} GB").format(query_size, max_gb_scanned)
 
     def head(self, table_name, num_rows=5, start_index=None, selected_columns=None):
         """
