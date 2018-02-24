@@ -27,6 +27,10 @@ class BigQueryHelper(object):
         self.dataset = None
         self.tables = dict()  # {table name (str): table object}
         self.__table_refs = dict()  # {table name (str): table reference}
+        self.data_used=None
+        self.filename="bigquery_record.txt"
+        
+        
 
     def __fetch_dataset(self):
         # Lazy loading of dataset. For example,
@@ -74,6 +78,7 @@ class BigQueryHelper(object):
         """
         query_job = self.client.query(query)
         rows = list(query_job.result(timeout=30))
+        self.Add_Usage(query) #ADDING USAGE TO FILE
         if len(rows) == 0:
             print("Query returned no rows.")
             return pd.DataFrame()
@@ -86,6 +91,7 @@ class BigQueryHelper(object):
         """
         query_size = self.estimate_query_size(query)
         if query_size <= max_gb_scanned:
+            self.Add_Usage(query) # ADDING USAGE TO FILE
             return self.query_to_pandas(query)
         msg = "Query cancelled; estimated size of {0} exceeds limit of {1} GB"
         print(msg.format(query_size, max_gb_scanned))
@@ -104,3 +110,36 @@ class BigQueryHelper(object):
         results = [x for x in results]
         return pd.DataFrame(
             data=[list(x.values()) for x in results], columns=list(results[0].keys()))
+    
+    def Add_Usage(self,query):
+        """
+        This function will add the size of data used in query for every time the query is run
+        """
+        to_add=self.estimate_query_size(query)
+        if self.data_used==None:
+            if not os.path.exists(self.filename):
+                f=open(self.filename,'w')
+                f.write(str(to_add))
+                f.close()
+            f=open(self.filename,'r')
+            self.data_used=float(f.read())
+            f.close()
+        self.data_used+=to_add
+        f=open(self.filename,'w')
+        f.write(str(self.data_used))
+        f.close()
+    def Check_Current_Usage(self):
+        """
+        Returns the Current Data used, for one kernel only
+        """
+        if self.data_used==None:
+            if not os.path.exists(self.filename):
+                f=open(self.filename,'w')
+                f.write(str(0))
+                f.close()
+            f=open(self.filename,'r')
+            self.data_used=float(f.read())
+            f.close()
+        return self.data_used
+    
+    
