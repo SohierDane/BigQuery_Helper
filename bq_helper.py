@@ -6,6 +6,7 @@ Helper class to simplify common read-only BigQuery tasks.
 import pandas as pd
 
 from google.cloud import bigquery
+import time
 
 
 class BigQueryHelper(object):
@@ -19,14 +20,16 @@ class BigQueryHelper(object):
 
     BYTES_PER_GB = 2**30
 
-    def __init__(self, active_project, dataset_name):
+    def __init__(self, active_project, dataset_name, max_wait_seconds=180):
         self.project_name = active_project
         self.dataset_name = dataset_name
+        self.max_wait_seconds = max_wait_seconds
         self.client = bigquery.Client()
         self.__dataset_ref = self.client.dataset(self.dataset_name, project=self.project_name)
         self.dataset = None
         self.tables = dict()  # {table name (str): table object}
         self.__table_refs = dict()  # {table name (str): table reference}
+        self.total_gb_used_net_cache = 0
 
     def __fetch_dataset(self):
         # Lazy loading of dataset. For example,
@@ -72,13 +75,16 @@ class BigQueryHelper(object):
         """
         Take a SQL query & return a pandas dataframe
         """
-        query_job = self.client.query(query)
-        rows = list(query_job.result(timeout=30))
-        if len(rows) == 0:
-            print("Query returned no rows.")
-            return pd.DataFrame()
-        return pd.DataFrame(
-            data=[list(x.values()) for x in rows], columns=list(rows[0].keys()))
+        my_job = self.client.query(query)
+        start_time = time.time()
+        while not my_job.done():
+            if (time.time() - start_time) > self.max_wait_seconds:
+                print("Max wait time elapsed, query cancelled.")
+                self.client.cancel_job(my_job.job_id)
+                return None
+            time.sleep(0.1)
+        self.total_gb_used_net_cache += my_job.total_bytes_billed / self.BYTES_PER_GB
+        return my_job.to_dataframe()
 
     def query_to_pandas_safe(self, query, max_gb_scanned=1):
         """
