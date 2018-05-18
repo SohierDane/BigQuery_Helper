@@ -83,7 +83,11 @@ class BigQueryHelper(object):
                 self.client.cancel_job(my_job.job_id)
                 return None
             time.sleep(0.1)
-        self.total_gb_used_net_cache += my_job.total_bytes_billed / self.BYTES_PER_GB
+        # Queries that hit errors will return an exception type.
+        # Those exceptions don't get raised until we call my_job.to_dataframe()
+        # In that case, my_job.total_bytes_billed can be called but is None
+        if my_job.total_bytes_billed:
+            self.total_gb_used_net_cache += my_job.total_bytes_billed / self.BYTES_PER_GB
         return my_job.to_dataframe()
 
     def query_to_pandas_safe(self, query, max_gb_scanned=1):

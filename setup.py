@@ -2,7 +2,7 @@ from setuptools import setup
 
 
 setup(name='bq_helper',
-      version='0.3.0',
+      version='0.3.1',
       description='Helper class to simplify common read-only BigQuery tasks.',
       author='Sohier Dane',
       url='https://github.com/SohierDane/BigQuery_Helper',
