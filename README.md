@@ -14,7 +14,7 @@ This repo has only been tested on Python 3.6+.
 
 ## Changelog
 #### 0.3.0:
-- Each helper instance now logs the total bytes counted towards your quota or bill used across all queries run with that helper instance. You can access it with BigQueryHelper.total_gb_used_net_cache. Repeated queries are likely to the cache and may show up as 0 GB used.
+- Each helper instance now logs the total bytes counted towards your quota or bill used across all queries run with that helper instance. You can access it with BigQueryHelper.total_gb_used_net_cache. Repeated queries are likely to hit the cache and may show up as 0 GB used.
 - Queries that take longer than the maximum wait time, which defaults to 3 minutes, will be cancelled.
 - Contributing to bq_helper should be easier now that there is a set of tests.
 
