@@ -17,7 +17,9 @@ https://bigquery.cloud.google.com/table/bigquery-public-data:openaq.global_air_q
 
 import unittest
 
+# from google.cloud.bigquery import bigquery
 from bq_helper import BigQueryHelper
+from google.api_core.exceptions import BadRequest
 from pandas.core.frame import DataFrame
 from random import random
 
@@ -28,7 +30,7 @@ class TestBQHelper(unittest.TestCase):
         self.query = "SELECT location FROM `bigquery-public-data.openaq.global_air_quality`"
         # Query randomized so it won't hit the cache across multiple test runs
         self.randomizable_query = """
-            SELECT value from `bigquery-public-data.openaq.global_air_quality`
+            SELECT value FROM `bigquery-public-data.openaq.global_air_quality`
             WHERE value = {0}"""
 
     def test_list_tables(self):
@@ -58,6 +60,10 @@ class TestBQHelper(unittest.TestCase):
     def test_useage_tracker(self):
         self.my_bq.query_to_pandas(self.randomizable_query.format(random()))
         self.assertNotEqual(self.my_bq.total_gb_used_net_cache, 0)
+
+    def test_bad_query_raises_right_error(self):
+        with self.assertRaises(BadRequest):
+            self.my_bq.query_to_pandas("Not a valid query")
 
 
 if __name__ == '__main__':
