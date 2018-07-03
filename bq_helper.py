@@ -32,14 +32,18 @@ class BigQueryHelper(object):
         self.total_gb_used_net_cache = 0
 
     def __fetch_dataset(self):
-        # Lazy loading of dataset. For example,
-        # if the user only calls `self.query_to_pandas` then the
-        # dataset never has to be fetched.
+        """
+        Lazy loading of dataset. For example,
+        if the user only calls `self.query_to_pandas` then the
+        dataset never has to be fetched.
+        """
         if self.dataset is None:
             self.dataset = self.client.get_dataset(self.__dataset_ref)
 
     def __fetch_table(self, table_name):
-        # Lazy loading of table
+        """
+        Lazy loading of table
+        """
         self.__fetch_dataset()
         if table_name not in self.__table_refs:
             self.__table_refs[table_name] = self.dataset.table(table_name)
