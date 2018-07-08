@@ -15,9 +15,10 @@ For details on the test dataset, please see:
 https://bigquery.cloud.google.com/table/bigquery-public-data:openaq.global_air_quality?tab=details
 """
 
+
 import unittest
 
-# from google.cloud.bigquery import bigquery
+
 from bq_helper import BigQueryHelper
 from google.api_core.exceptions import BadRequest
 from pandas.core.frame import DataFrame
@@ -64,6 +65,10 @@ class TestBQHelper(unittest.TestCase):
     def test_bad_query_raises_right_error(self):
         with self.assertRaises(BadRequest):
             self.my_bq.query_to_pandas("Not a valid query")
+
+    def test_list_nested_schema(self):
+        nested_helper = BigQueryHelper("bigquery-public-data", "github_repos")
+        self.assertEqual(len(nested_helper.table_schema('commits')), 33)
 
 
 if __name__ == '__main__':

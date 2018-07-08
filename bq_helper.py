@@ -4,9 +4,9 @@ Helper class to simplify common read-only BigQuery tasks.
 
 
 import pandas as pd
+import time
 
 from google.cloud import bigquery
-import time
 
 
 class BigQueryHelper(object):
@@ -18,8 +18,6 @@ class BigQueryHelper(object):
     https://googlecloudplatform.github.io/google-cloud-python/latest/bigquery/reference.html
     """
 
-    BYTES_PER_GB = 2**30
-
     def __init__(self, active_project, dataset_name, max_wait_seconds=180):
         self.project_name = active_project
         self.dataset_name = dataset_name
@@ -30,6 +28,7 @@ class BigQueryHelper(object):
         self.tables = dict()  # {table name (str): table object}
         self.__table_refs = dict()  # {table name (str): table reference}
         self.total_gb_used_net_cache = 0
+        self.BYTES_PER_GB = 2**30
 
     def __fetch_dataset(self):
         """
@@ -50,12 +49,64 @@ class BigQueryHelper(object):
         if table_name not in self.tables:
             self.tables[table_name] = self.client.get_table(self.__table_refs[table_name])
 
+    def __handle_record_field(self, row, schema_details, top_level_name=''):
+        """
+        Unpack a single row, including any nested fields.
+        """
+        name = row['name']
+        if top_level_name != '':
+            name = top_level_name + '.' + name
+        schema_details.append([{
+            'name': name,
+            'type': row['type'],
+            'mode': row['mode'],
+            'fields': pd.np.nan,
+            'description': row['description']
+                               }])
+        # float check is to dodge row['fields'] == np.nan
+        if type(row.get('fields', 0.0)) == float:
+            return None
+        for entry in row['fields']:
+            self.__handle_record_field(entry, schema_details, row['name'])
+
+    def __unpack_all_schema_fields(self, schema):
+        """
+        Unrolls nested schemas. Returns dataframe with one row per field,
+        and the field names in the format accepted by the API.
+        Results will look similar to the website schema, such as:
+            https://bigquery.cloud.google.com/table/bigquery-public-data:github_repos.commits?pli=1
+
+        Args:
+            schema: DataFrame derived from api repr of raw table.schema
+        Returns:
+            Dataframe of the unrolled schema.
+        """
+        schema_details = []
+        schema.apply(lambda row:
+            self.__handle_record_field(row, schema_details), axis=1)
+        result = pd.concat([pd.DataFrame.from_dict(x) for x in schema_details])
+        result.reset_index(drop=True, inplace=True)
+        del result['fields']
+        return result
+
     def table_schema(self, table_name):
         """
-        Get the schema for a specific table from a dataset
+        Get the schema for a specific table from a dataset.
+        Unrolls nested field names into the format that can be copied
+        directly into queries. For example, for the `github.commits` table,
+        the this will return `committer.name`.
+
+        This is a very different return signature than BigQuery's table.schema.
         """
         self.__fetch_table(table_name)
-        return(self.tables[table_name].schema)
+        raw_schema = self.tables[table_name].schema
+        schema = pd.DataFrame.from_dict([x.to_api_repr() for x in raw_schema])
+        # the api_repr only has the fields column for tables with nested data
+        if 'fields' in schema.columns:
+            schema = self.__unpack_all_schema_fields(schema)
+        # Set the column order
+        schema = schema[['name', 'type', 'mode', 'description']]
+        return schema
 
     def list_tables(self):
         """
@@ -77,7 +128,7 @@ class BigQueryHelper(object):
 
     def query_to_pandas(self, query):
         """
-        Take a SQL query & return a pandas dataframe
+        Execute a SQL query & return a pandas dataframe
         """
         my_job = self.client.query(query)
         start_time = time.time()
@@ -96,7 +147,7 @@ class BigQueryHelper(object):
 
     def query_to_pandas_safe(self, query, max_gb_scanned=1):
         """
-        Execute a query if it's smaller than a certain number of gigabytes
+        Execute a query, but only if the query would scan less than `max_gb_scanned` of data.
         """
         query_size = self.estimate_query_size(query)
         if query_size <= max_gb_scanned:
@@ -106,7 +157,8 @@ class BigQueryHelper(object):
 
     def head(self, table_name, num_rows=5, start_index=None, selected_columns=None):
         """
-        Get the first n rows of a table as a DataFrame
+        Get the first n rows of a table as a DataFrame.
+        Does not perform a full table scan; should use a trivial amount of data as long as n is small.
         """
         self.__fetch_table(table_name)
         active_table = self.tables[table_name]
