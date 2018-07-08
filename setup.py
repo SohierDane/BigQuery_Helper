@@ -1,8 +1,9 @@
 from setuptools import setup
+from version import __version__ as version
 
 
 setup(name='bq_helper',
-      version='0.3.2',
+      version=version,
       description='Helper class to simplify common read-only BigQuery tasks.',
       author='Sohier Dane',
       url='https://github.com/SohierDane/BigQuery_Helper',
