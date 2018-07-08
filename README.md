@@ -13,8 +13,11 @@ If you aren't running BigQuery_Helper on [Kaggle](http://kaggle.com/), you will 
 This repo has only been tested on Python 3.6+ and the v0.29+ of the bigquery API.
 
 ## Changelog
+#### 0.4.0:
+- `BigQueryHelper.table_schema` has been overhauled. It now returns a Pandas DataFrame and unrolls nested fields so that the results are in the format expected by queries. For example, the `github_repos.commits` nested field `author` now returns sub-fields names in the format like `author.email`.
+
 #### 0.3.0:
-- Each helper instance now logs the total bytes counted towards your quota or bill used across all queries run with that helper instance. You can access it with BigQueryHelper.total_gb_used_net_cache. Repeated queries are likely to hit the cache and may show up as 0 GB used.
+- Each helper instance now logs the total bytes counted towards your quota or bill used across all queries run with that helper instance. You can access it with `BigQueryHelper.total_gb_used_net_cache`. Repeated queries are likely to hit the cache and may show up as 0 GB used.
 - Queries that take longer than the maximum wait time, which defaults to 3 minutes, will be cancelled.
 - Contributing to bq_helper should be easier now that there is a set of tests.
 
