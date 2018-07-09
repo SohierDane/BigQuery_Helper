@@ -67,7 +67,7 @@ class BigQueryHelper(object):
         if type(row.get('fields', 0.0)) == float:
             return None
         for entry in row['fields']:
-            self.__handle_record_field(entry, schema_details, row['name'])
+            self.__handle_record_field(entry, schema_details, name)
 
     def __unpack_all_schema_fields(self, schema):
         """
