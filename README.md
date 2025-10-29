@@ -1,3 +1,6 @@
+This library was intended to address limitations of the core tool that have since been resolved. We now recommend that you use the [google-cloud-bigquery](https://cloud.google.com/python/docs/reference/bigquery/latest) instead.
+
+
 ## Summary
 
 BigQuery_Helper is a helper class to simplify common read-only BigQuery tasks. It makes it easy to execute queries while you're learning SQL, and provides a convenient stepping stone on the path to using [the core BigQuery python API](https://googlecloudplatform.github.io/google-cloud-python/latest/bigquery/reference.html). You can try it for yourself by forking [this Kaggle kernel](https://www.kaggle.com/sohier/introduction-to-the-bq-helper-package/).
